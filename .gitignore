@@ -1,6 +1,11 @@
 # Created by https://www.toptal.com/developers/gitignore/api/flask,node
 # Edit at https://www.toptal.com/developers/gitignore?templates=flask,node
 
+### Batfiles ###
+start.bat
+start.sh
+
+
 ### Flask ###
 instance/*
 !instance/.gitignore
