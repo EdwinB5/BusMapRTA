@@ -1,18 +1,13 @@
 //Simulation
 import knex from "knex";
-import knexConfig from "./knexfile";
+import knexConfig from "./knexfile.js";
 
-const db = knex({
-  client: "pg",
-  connection: {
-    host: "localhost",
-    user: process.env.PG_USER, // Variable de entorno para el usuario
-    password: process.env.PG_PASSWORD, // Variable de entorno para la contraseña
-    database: process.env.PG_DATABASE, // Variable de entorno para la base de datos
-  },
+const db = knex(knexConfig.development);
+db.raw('SELECT PostGIS_Version();').then(result => {
+    console.log(result.rows);
+}).catch(err => {
+    console.error('Error al verificar la conexión:', err);
+}).finally(() => {
+    // Cerrar la conexión cuando hayas terminado
+    db.destroy();
 });
-
-// Resto del código para interactuar con la base de datos
-
-// No olvides cerrar la conexión cuando hayas terminado.
-db.destroy();
