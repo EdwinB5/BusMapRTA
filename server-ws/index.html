@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>WebSocket Client Example</title>
+  </head>
+  <body>
+    <div>
+        <h1>Hola mundo!</h1>
+    </div>
+    <script>
+      var ws = new WebSocket('ws://localhost:8080');
+
+      ws.onopen = function() {
+        ws.send('something');
+        ws.send('close');
+      };
+
+      ws.onmessage = function(e) {
+        console.log('received: %s', e.data);
+      };
+    </script>
+  </body>
+</html>

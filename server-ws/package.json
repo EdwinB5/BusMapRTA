@@ -1,0 +1,31 @@
+{
+  "name": "server-ws",
+  "version": "0.0.1",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EdwinB5/BusMapRTA.git"
+  },
+  "keywords": [
+    "WebSocket"
+  ],
+  "author": "@EdwinB5, @NilsonSpaghettiCode",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/EdwinB5/BusMapRTA/issues"
+  },
+  "homepage": "https://github.com/EdwinB5/BusMapRTA#readme",
+  "dependencies": {
+    "knex": "^3.0.1",
+    "objection": "^3.1.2",
+    "pg": "^8.11.3",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {},
+  "description": ""
+}

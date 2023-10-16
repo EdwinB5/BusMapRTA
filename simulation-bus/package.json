@@ -1,0 +1,27 @@
+{
+  "name": "simulation-bus",
+  "version": "0.0.1",
+  "description": "Simulation",
+  "main": "simulation.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EdwinB5/BusMapRTA.git"
+  },
+  "keywords": [
+    "Simulation"
+  ],
+  "author": "@EdwinB5, @Nilson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/EdwinB5/BusMapRTA/issues"
+  },
+  "homepage": "https://github.com/EdwinB5/BusMapRTA#readme",
+  "dependencies": {
+    "knex": "^3.0.1",
+    "objection": "^3.1.2",
+    "pg": "^8.11.3"
+  }
+}
