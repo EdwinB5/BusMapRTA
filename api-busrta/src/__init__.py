@@ -29,10 +29,11 @@ api = Api(api_route)
 session = Session(engine)
 
 #import recursos y rutas
-from src.resources.municipio import Municipios
+from src.resources.municipio import Municipios, MunicipioUpdate
 from src.resources.cundinamarca import Cundinamarca
 
 api.add_resource(Municipios, '/municipios')
+api.add_resource(MunicipioUpdate, '/municipios/modificar')
 api.add_resource(Cundinamarca, '/cundinamarca')
 
 # Ruta de inicio
