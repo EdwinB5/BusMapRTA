@@ -1,4 +1,4 @@
-from shapely.geometry import MultiPolygon, Point
+from shapely.geometry import MultiPolygon, Point, LineString
 from shapely.wkb import loads
 
 
@@ -23,3 +23,9 @@ def array_to_multipolygon(array):
 
 def multipolygon_list(geometry):
     return [[list(coord) for coord in poly.exterior.coords] for poly in list(geometry.geoms)]
+
+
+def linestring_to_wkt(line_coords):
+    line = LineString(line_coords)
+    wkt_line = line.wkt
+    return wkt_line

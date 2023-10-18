@@ -2,7 +2,10 @@ from flask import request
 from flask_restful import Resource
 from src import Base, session
 from src.utils.json_wrapper import format_json
-from src.utils.geometry import load_point
+from src.utils.geometry import load_point, linestring_to_wkt
+import requests
+
+import random
 
 
 class Buses(Resource):
@@ -54,21 +57,47 @@ class Buses(Resource):
         try:
             municipio_origen = self.session.query(
                 self.Municipio).filter_by(id=json_data['origen']).first()
+            municipio_destino = self.session.query(
+                self.Municipio).filter_by(id=json_data['destino']).first()
         except Exception as error:
             return (f'Not origen/destino founded, error: {error}', 400)
 
+        try:
+            latitud_origen, longitud_origen = load_point(
+                str(municipio_origen.localizacion))
+            latitud_destino, longitud_destino = load_point(
+                str(municipio_destino.localizacion))
+        except Exception as error:
+            return (f'Not origen/destino has aparcadero, error {error}.', 400)
+        
+
         if municipio_origen.capacidad_maxima > municipio_origen.capacidad_actual:
             municipio_origen.capacidad_actual += 1
+            
+            try:
+                url = f"http://router.project-osrm.org/route/v1/driving/{longitud_origen},{latitud_origen};{longitud_destino},{latitud_destino}?overview=full&geometries=geojson"
+                response = requests.get(url)
+                data = response.json()
+                
+                ruta = data['routes'][0]
+                distancia = ruta['distance']
+                geometry = linestring_to_wkt(ruta['geometry']['coordinates'])
+            except Exception:
+                return ('Something went wrong with open street map.', 500)
 
             json_data['localizacion'] = municipio_origen.localizacion
-            json_data['cupos_actuales'] = 0
+            json_data['cupos_actuales'] = random.randint(1, json_data['cupos_maximos'])
             json_data['estado'] = 'aparcado'
+            json_data['velocidad_promedio'] = random.randint(60, 80)
+            json_data['ruta'] = geometry
+            json_data['distancia_viaje'] = distancia
 
             try:
                 bus = self.Buses(**json_data)
                 self.session.add(bus)
                 self.session.commit()
             except Exception as error:
+                self.session.rollback()
                 return (f'Unexpected added bus error: {error}', 400)
 
             return 'Bus added succesfully.'
