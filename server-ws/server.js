@@ -13,15 +13,16 @@ const server_socket = new WebSocketServer(http_server, {
   },
 });
 
-server_socket.on("connection", function connection(socket) {
+server_socket.on("connection", (socket_client) => {
+
   console.log("Conexión recibida");
-  server_socket.on("update", function update(data) {
+
+  socket_client.on("change", (data) => {
     //console.log("Update received");
-    console.log(data);
+    console.log(data.message);
   });
+
 });
-
-
 
 //LISTEN HTTPSERVER REQUEST
 http_server.listen(port, ip_http, () => {
