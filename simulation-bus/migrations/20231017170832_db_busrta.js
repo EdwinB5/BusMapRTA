@@ -28,6 +28,9 @@ const up = function (knex) {
       table.datetime("fecha_disponible");
       table.integer("cupos_maximos");
       table.integer("cupos_actuales");
+      table.integer("velocidad_promedio").notNullable();
+      table.specificType("ruta", "geometry(LINESTRING)").notNullable();
+      table.float("distancia_viaje").notNullable();
     })
     .createTable("simulacion", function (table) {
       table.increments("id").primary();
