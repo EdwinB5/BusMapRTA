@@ -1,13 +1,17 @@
 //LIBRARIES
 import knex from "knex";
 import knexConfig from "../../knexfile.js";
+
+//MODELS OBJECTION
 import { Model } from "objection";
 import Simulacion from "../models/Simulacion.js";
 
+//INTERFACES
 import IPusblisher from "../interface/IPublisher.js";
 
 //UTILS
 import { sleep, toMS } from "../utils/Chrono.js";
+
 
 const STATES_SIMULATION = {
   INIT: "iniciado",
@@ -17,22 +21,24 @@ const STATES_SIMULATION = {
 };
 
 export class Simulation extends IPusblisher {
-  constructor() {
+  constructor(time_pause) {
     super();
     this.db = null;
     this.config_simulation = null;
-    this.time_pause = 1000; //1s
+    this.time_pause = time_pausel; //1s
     this.before_time = null;
     this.after_time = null;
+    this.host_socket = null;
   }
 
   async init() {
     //Init DB with knex and set DB to Model for Objection.js lib
     this.db = knex(knexConfig.development);
     Model.knex(this.db);
-    //Load config simulation
+    
+    //Load remote config simulation
     await this.setConfigSimulation();
-    console.log("Configuracion de simulacion cargada");
+    console.log("Configuracion REMOTA de simulacion cargada");
     console.log(this.config_simulation);
   }
 
@@ -81,6 +87,8 @@ export class Simulation extends IPusblisher {
   }
   notifyChanges() {
     //Notificar cambios a los sockets conectados
+
+
   }
 
   async waitTime() {

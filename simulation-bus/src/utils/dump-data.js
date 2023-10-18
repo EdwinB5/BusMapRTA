@@ -28,23 +28,23 @@ function getPolygonByName(target_names) {
 
 //getPolygonByName(['Cundinamarca', 'BogotáD.C.']);
 
-function readFileJSON(path) {
+export function readFileJSON(path) {
   let json_in;
   try {
     const data_in = fs.readFileSync(path, "utf-8");
     json_in = JSON.parse(data_in);
   } catch (error) {
-    throw new Error("Error reading or parsing the file:", error);
+    throw new Error(`Error reading or parsing the file: ${error} | PATH: ${path}`);
   }
   return json_in;
 }
 
-function writeFileJSON(data, path) {
+export function writeFileJSON(data, path) {
   try {
     let data_out = JSON.stringify(data);
     fs.writeFileSync(path, data_out);
   } catch (error) {
-    throw new Error("Error stringify or writefile:", error);
+    throw new Error(`Error stringify or writefile: ${error} | PATH: ${path}`);
   }
 }
 

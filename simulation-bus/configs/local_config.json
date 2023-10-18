@@ -1,0 +1,4 @@
+{
+    "time_pause": 1000,
+    "url_socket_server": "http://localhost:3000"
+}

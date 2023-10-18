@@ -20,6 +20,7 @@ import { Application } from "./src/controller/Application.js";
 
 function main(params) {
     const app = new Application();
+    app.init();
     app.run(params);
 }
 
