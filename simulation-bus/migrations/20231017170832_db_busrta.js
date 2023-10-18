@@ -25,7 +25,6 @@ const up = function (knex) {
       table.foreign("destino").references("municipio.id");
       table.datetime("fecha_salida");
       table.datetime("fecha_entrada");
-      table.datetime("duracion_aparcadero");
       table.datetime("fecha_disponible");
       table.integer("cupos_maximos");
       table.integer("cupos_actuales");

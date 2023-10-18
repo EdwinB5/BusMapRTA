@@ -21,7 +21,7 @@ const STATES_SIMULATION = {
 };
 
 export class Simulation extends IPusblisher {
-  constructor(time_pause) {
+  constructor(time_pause, socket_client) {
     super();
     this.db = null;
     this.config_simulation = null;
@@ -29,13 +29,13 @@ export class Simulation extends IPusblisher {
     this.before_time = null;
     this.after_time = null;
     this.host_socket = null;
+    this.socket_client = socket_client;
   }
 
   async init() {
     //Init DB with knex and set DB to Model for Objection.js lib
     this.db = knex(knexConfig.development);
     Model.knex(this.db);
-    
     //Load remote config simulation
     await this.setConfigSimulation();
     console.log("Configuracion REMOTA de simulacion cargada");
@@ -73,7 +73,7 @@ export class Simulation extends IPusblisher {
     //Aumentar tiempo de la simulacion
     let actual_time = this.config_simulation.tiempo;
     this.before_time = actual_time;
-    console.log("Anterior: "+ actual_time);
+    console.log("Tiempo simulación: "+ actual_time);
 
     let time_add = this.config_simulation.aumento_tiempo; //In seconds
     actual_time.setSeconds(actual_time.getSeconds() + time_add); //Change time
@@ -87,8 +87,7 @@ export class Simulation extends IPusblisher {
   }
   notifyChanges() {
     //Notificar cambios a los sockets conectados
-
-
+    this.socket_client.emit("update", { message: `changes made successfully. Time before: ${this.before_time} | Time after: ${this.after_time}` });
   }
 
   async waitTime() {
@@ -103,8 +102,32 @@ export class Simulation extends IPusblisher {
 
   async setConfigSimulation() {
     this.config_simulation = await Simulacion.query().findById(1);
+    this.checkStatusSimulation(this.config_simulation.estado);
   }
 
+  /**
+   * Allow check if status simulation is valid, if not, throw error. Possible states: **iniciado**, **simulando**, **pausado**, **detenido**
+   * @param {*} status_remote 
+   * @returns 
+   */
+  checkStatusSimulation(status_remote) {
+    console.log("Estado simulación: ", status_remote)
+    let status_simulation_valid = false;
+    for (const key in STATES_SIMULATION) {
+      const status =  STATES_SIMULATION[key];
+      if (status === status_remote) {
+        status_simulation_valid = true;
+        break;
+      }
+    }
+    
+    if (!status_simulation_valid) {
+      
+      throw new Error(
+        `El estado de la simulación no es válido, estado actual.`
+      );
+    }
+  }
   /**
    * Using pattern observer, add new suscriber to list
    * @param {Object} observer

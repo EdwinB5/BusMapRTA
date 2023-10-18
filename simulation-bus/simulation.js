@@ -18,9 +18,12 @@ db.destroy();
 
 import { Application } from "./src/controller/Application.js";
 
-function main(params) {
+async function main(params) {
     const app = new Application();
     app.init();
+    if (app.socket_status) {
+        console.log("Conexión websocket establecida");
+    }
     app.run(params);
 }
 

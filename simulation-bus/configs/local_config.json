@@ -1,4 +1,7 @@
 {
-    "time_pause": 1000,
-    "url_socket_server": "wss://localhost:8080"
+  "time_pause": 1000,
+  "url_socket_server": "ws://localhost:8080",
+  "reconnection": true,
+  "reconnection_attempts": 5,
+  "reconnection_delay": 1000
 }
