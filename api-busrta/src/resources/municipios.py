@@ -17,6 +17,8 @@ class Municipios(Resource):
         nombre_municipio = request.args.get('nombre')
         municipio_id = request.args.get('id')
 
+        method = 'all'
+
         try:
             query = self.session.query(self.Municipio)
         except Exception:
@@ -27,14 +29,21 @@ class Municipios(Resource):
 
         if nombre_municipio:
             query = query.filter_by(nombre=nombre_municipio)
+            method = 'first'
 
-        if municipio_id:
+        if municipio_id and type(municipio_id) == int:
             query = query.filter_by(id=municipio_id)
+            method = 'first'
+
+        query = query.all() if method == 'all' else [query.first()]
+
+        if query[0] == None:
+            return ("Municipios resource not found.", 404)
 
         results = []
         columns = self.Municipio.__table__.columns.keys()
 
-        for municipio in query.all():
+        for municipio in query:
             result = {}
 
             for key in columns:

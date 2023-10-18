@@ -1,6 +1,5 @@
 from shapely.geometry import MultiPolygon, Point
 from shapely.wkb import loads
-from shapely.geometry import mapping
 
 
 def load_multipolygon(wkb_str):

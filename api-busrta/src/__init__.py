@@ -28,17 +28,21 @@ api_route = Blueprint('api', __name__, url_prefix='/api')
 api = Api(api_route)
 session = Session(engine)
 
-#import recursos y rutas
-from src.resources.municipio import Municipios, MunicipioUpdate
-from src.resources.cundinamarca import Cundinamarca
+# import recursos y rutas
+from src.resources.buses import Buses
 from src.resources.simulacion import Simulacion
+from src.resources.cundinamarca import Cundinamarca
+from src.resources.municipios import Municipios, MunicipioUpdate
 
 api.add_resource(Municipios, '/municipios')
 api.add_resource(MunicipioUpdate, '/municipios/modificar')
 api.add_resource(Cundinamarca, '/cundinamarca')
 api.add_resource(Simulacion, '/simulacion')
+api.add_resource(Buses, '/buses')
 
 # Ruta de inicio
+
+
 @api_route.route('/')
 def default_route():
     return '¡Bienvenido a la API Bus Map!'

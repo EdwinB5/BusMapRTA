@@ -25,6 +25,9 @@ class Simulacion(Resource):
     def put(self):
         simulacion_id = request.args.get('id')
         data = request.get_json()
+        if data is None:
+            return ("Not data provied to update simulation", 400)
+        
         try:
             simulacion = self.session.query(self.Simulacion).filter_by(id=simulacion_id).first()
             if simulacion is None:
