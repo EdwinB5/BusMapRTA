@@ -19,7 +19,7 @@ db.destroy();
 import { Application } from "./src/controller/Application.js";
 
 async function main(params) {
-    const app = new Application();
+    const app = Application.getInstance();
     app.init();
     if (app.socket_status) {
         console.log("Conexión websocket establecida");

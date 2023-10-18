@@ -2,17 +2,35 @@ import { Simulation } from "./Simulation.js";
 import { readFileJSON } from "../utils/dump-data.js";
 import { io } from "socket.io-client";
 
+let APPLICATION = null;
+
 export class Application {
   // class methods and properties go here
   constructor() {
-    this.simulation = null;
-
-    //Load local config simulation
-    this.local_config = null;
-    this.socket_client = null;
-    this.socket_status = false;
-    this.attemps = 0;
+    if (APPLICATION !== null) {
+      throw new Error(
+        "No se puede instanciar la clase Application, usa el método getInstance() ."
+      );
+    }
   }
+  /**
+   * @returns {Application} a unique aplication instance same for all 
+   * @static
+   * */
+  static getInstance()
+  {
+    if(APPLICATION === null)
+    {
+      this.simulation = null;
+      this.local_config = null;
+      this.socket_client = null;
+      this.socket_status = false;
+      this.attemps = 0;
+      APPLICATION = new Application();
+    }
+    return APPLICATION;
+  }
+
   init() {
     //LOAD CONFIG APP
     this.local_config = readFileJSON("./configs/local_config.json");
@@ -33,7 +51,7 @@ export class Application {
       let status_db = null;
       console.log("Socket conectado");
       //Start simulation
-      this.simulation = new Simulation(this.local_config.time_pause, this.socket_client);
+      this.simulation = new Simulation(this.local_config.time_pause);
       
       try {
         await this.simulation.init();
@@ -73,6 +91,6 @@ export class Application {
       this.attemps++;
     });
 
-    console.log("CERRADO!");
   }
+
 }

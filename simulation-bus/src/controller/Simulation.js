@@ -8,6 +8,7 @@ import Simulacion from "../models/Simulacion.js";
 
 //INTERFACES
 import IPusblisher from "../interface/IPublisher.js";
+import { Application } from "./Application.js";
 
 //UTILS
 import { sleep, toMS } from "../utils/Chrono.js";
@@ -21,15 +22,13 @@ const STATES_SIMULATION = {
 };
 
 export class Simulation extends IPusblisher {
-  constructor(time_pause, socket_client) {
+  constructor(time_pause) {
     super();
     this.db = null;
     this.config_simulation = null;
     this.time_pause = time_pause; //1s
     this.before_time = null;
     this.after_time = null;
-    this.host_socket = null;
-    this.socket_client = socket_client;
   }
 
   async init() {
@@ -72,12 +71,12 @@ export class Simulation extends IPusblisher {
   async increaseTime() {
     //Aumentar tiempo de la simulacion
     let actual_time = this.config_simulation.tiempo;
-    this.before_time = actual_time;
+    this.before_time = new Date(actual_time);
     console.log("Tiempo simulación: "+ actual_time);
 
     let time_add = this.config_simulation.aumento_tiempo; //In seconds
     actual_time.setSeconds(actual_time.getSeconds() + time_add); //Change time
-    this.after_time = actual_time;
+    this.after_time = new Date(actual_time);
     //Update time in DB
     let state = await Simulacion.query().findById(1).patch({
       tiempo: actual_time.toISOString(),
@@ -87,8 +86,10 @@ export class Simulation extends IPusblisher {
   }
   notifyChanges() {
     //Notificar cambios a los sockets conectados
-    //this.socket_client.emit("update", { message: `changes made successfully. Time before: ${this.before_time} | Time after: ${this.after_time}` });
-    console.log("Notificando cambios...");
+    const message_i = {
+      message: `changes made successfully. Time before: ${this.before_time} | Time after: ${this.after_time}`,
+    };
+    Application.getInstance().socket_client.emit("change", message_i);
   }
 
   async waitTime() {
