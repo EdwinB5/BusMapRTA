@@ -22,6 +22,8 @@ export class Simulation extends IPusblisher {
     this.db = null;
     this.config_simulation = null;
     this.time_pause = 1000; //1s
+    this.before_time = null;
+    this.after_time = null;
   }
 
   async init() {
@@ -64,11 +66,12 @@ export class Simulation extends IPusblisher {
   async increaseTime() {
     //Aumentar tiempo de la simulacion
     let actual_time = this.config_simulation.tiempo;
+    this.before_time = actual_time;
     console.log("Anterior: "+ actual_time);
 
     let time_add = this.config_simulation.aumento_tiempo; //In seconds
     actual_time.setSeconds(actual_time.getSeconds() + time_add); //Change time
-
+    this.after_time = actual_time;
     //Update time in DB
     let state = await Simulacion.query().findById(1).patch({
       tiempo: actual_time.toISOString(),
@@ -107,7 +110,7 @@ export class Simulation extends IPusblisher {
    */
   notify() {
     this.suscribers.forEach((suscriber) => {
-      suscriber.update();
+      suscriber.update(this.before_time, this.after_time);
     });
   }
 }
