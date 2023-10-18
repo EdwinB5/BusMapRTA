@@ -16,7 +16,7 @@ export default class Simulacion extends Model {
         maximo_viaje: { type: 'integer' },
         aumento_tiempo: { type: 'integer' },
         aumento_real: { type: 'integer' },
-        tiempo: { type: 'datetime' }
+        tiempo: { type: 'string', format: 'date-time' },
       }
     };
   }

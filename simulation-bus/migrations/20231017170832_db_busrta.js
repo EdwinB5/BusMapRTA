@@ -36,7 +36,7 @@ const up = function (knex) {
       table.integer("maximo_viaje").notNullable();
       table.integer("aumento_tiempo").notNullable();
       table.integer("aumento_real").notNullable();
-      table.datetime("tiempo", { useTz: false }).notNullable();
+      table.datetime("tiempo").notNullable();
       table.string("estado", 25).notNullable();
     })
     .createTable("municipio_bus", function (table) {
