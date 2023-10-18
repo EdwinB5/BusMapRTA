@@ -12,18 +12,6 @@ class Cundinamarca(Resource):
     
     @format_json
     def get(self):
-        """
-        Retrieves the geometry data for a Cundinamarca.
-
-        Returns the department's name and coordinates in GeoJSON format.
-
-        ---
-        tags:
-            - Cundinamarca
-        responses:
-            200:
-                description: The department's geometry data in GeoJSON format.
-    """
         result = self.data['geometry']['coordinates']
         result = {"departamento": self.data['properties']["NAME_1"],
                   "extension": array_to_multipolygon(self.data['geometry']['coordinates'])}

@@ -31,7 +31,7 @@ class Municipios(Resource):
             query = query.filter_by(nombre=nombre_municipio)
             method = 'first'
 
-        if municipio_id and type(municipio_id) == int:
+        if municipio_id and isinstance(municipio_id, int):
             query = query.filter_by(id=municipio_id)
             method = 'first'
 

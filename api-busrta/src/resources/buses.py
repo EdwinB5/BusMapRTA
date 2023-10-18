@@ -26,7 +26,7 @@ class Buses(Resource):
         except Exception:
             return ("The requested operation cannot be executed at this time.", 500)
 
-        if bus_id and type(bus_id) == int:
+        if bus_id and isinstance(bus_id, int):
             query = query.filter_by(id=bus_id)
             method = 'filter'
 
@@ -91,19 +91,28 @@ class Buses(Resource):
             return (f'Error while querying bus: {error}', 400)
 
         try:
-            if 'origen' in json_data:
-                bus.origen = json_data['origen']
-
-            if 'fecha_salida' in json_data:
-                bus.fecha_salida = json_data['fecha_salida']
-
-            if 'fecha_entrada' in json_data:
-                bus.fecha_entrada = json_data['fecha_entrada']
-
-            if 'destino' in json_data:
-                bus.destino = json_data['destino']
-            self.session.commit()
+            municipio_origen = self.session.query(
+                self.Municipio).filter_by(id=json_data['origen']).first()
         except Exception as error:
-            return (f'Error while updating bus: {error}', 400)
+            return (f'Not origen/destino founded, error: {error}', 400)
 
-        return 'Bus updated successfully.'
+        if municipio_origen.capacidad_maxima > municipio_origen.capacidad_actual:
+            try:
+                if 'origen' in json_data:
+                    bus.origen = json_data['origen']
+
+                if 'fecha_salida' in json_data:
+                    bus.fecha_salida = json_data['fecha_salida']
+
+                if 'fecha_entrada' in json_data:
+                    bus.fecha_entrada = json_data['fecha_entrada']
+
+                if 'destino' in json_data:
+                    bus.destino = json_data['destino']
+                self.session.commit()
+            except Exception as error:
+                return (f'Error while updating bus: {error}', 400)
+
+            return 'Bus updated successfully.'
+        else:
+            return (f'The municio aparcadero {municipio_origen.nombre} is full', 400)
