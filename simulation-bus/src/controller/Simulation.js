@@ -25,7 +25,7 @@ export class Simulation extends IPusblisher {
     super();
     this.db = null;
     this.config_simulation = null;
-    this.time_pause = time_pausel; //1s
+    this.time_pause = time_pause; //1s
     this.before_time = null;
     this.after_time = null;
     this.host_socket = null;
