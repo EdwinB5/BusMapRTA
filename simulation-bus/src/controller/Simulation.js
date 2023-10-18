@@ -87,7 +87,8 @@ export class Simulation extends IPusblisher {
   }
   notifyChanges() {
     //Notificar cambios a los sockets conectados
-    this.socket_client.emit("update", { message: `changes made successfully. Time before: ${this.before_time} | Time after: ${this.after_time}` });
+    //this.socket_client.emit("update", { message: `changes made successfully. Time before: ${this.before_time} | Time after: ${this.after_time}` });
+    console.log("Notificando cambios...");
   }
 
   async waitTime() {

@@ -49,13 +49,13 @@ export class Application {
           );
         }
       }
-      if (!status_db) {
-        this.socket_client.disconnect();
-      } else if(status_db)
+      if(status_db)
       {
         console.log("Para que la aplicación inicie, verifique que el estado de la simulación no es 'detenido'.");
         process.exit(1);
+        
       }
+      
     });
 
     this.socket_client.on("disconnect", (reason) => {
@@ -72,5 +72,7 @@ export class Application {
       );
       this.attemps++;
     });
+
+    console.log("CERRADO!");
   }
 }
