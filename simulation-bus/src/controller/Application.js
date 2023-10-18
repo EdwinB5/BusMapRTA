@@ -10,6 +10,11 @@ export class Application {
     async run(params) {
         this.simulation = new Simulation();
         await this.simulation.init();
-        await this.simulation.start();
+        try {
+            await this.simulation.start();
+        } catch (error) {
+            console.log(`La aplicación se detuvo a petición del usuario externo, Error: ${error.message}.`);
+            
+        }
     }
 }

@@ -47,21 +47,34 @@ export class Simulation extends IPusblisher {
         console.log("En Pausa...");
       }
 
-      while (this.config_simulation.estado === STATES_SIMULATION.RUNNING || this.config_simulation.estado === STATES_SIMULATION.INIT) {
-        this.increaseTime();
+      while (
+        this.config_simulation.estado === STATES_SIMULATION.RUNNING ||
+        this.config_simulation.estado === STATES_SIMULATION.INIT
+      ) {
+        await this.increaseTime();
         this.notify();
         this.notifyChanges();
         await this.waitTime();
         await this.setConfigSimulation();
         console.log("Simulando...");
       }
-
     }
   }
 
-  increaseTime() {
+  async increaseTime() {
     //Aumentar tiempo de la simulacion
+    let actual_time = this.config_simulation.tiempo;
+    console.log("Anterior: "+ actual_time);
 
+    let time_add = this.config_simulation.aumento_tiempo; //In seconds
+    actual_time.setSeconds(actual_time.getSeconds() + time_add); //Change time
+
+    //Update time in DB
+    let state = await Simulacion.query().findById(1).patch({
+      tiempo: actual_time.toISOString(),
+    });
+
+    console.log("Siguiente: " + state);
   }
   notifyChanges() {
     //Notificar cambios a los sockets conectados
@@ -69,7 +82,9 @@ export class Simulation extends IPusblisher {
 
   async waitTime() {
     //Esperar tiempo de la simulacion
-    let frucuency_seconds = this.config_simulation.aumento_real/this.config_simulation.multiplicador;
+    let frucuency_seconds =
+      this.config_simulation.aumento_real /
+      this.config_simulation.multiplicador;
     await sleep(toMS(frucuency_seconds));
     console.log(`Tiempo simulado: ${frucuency_seconds} segundo`);
     //Change state simulation
