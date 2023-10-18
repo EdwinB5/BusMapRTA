@@ -10,7 +10,7 @@ def format_json(func):
             result, status_code = result
             
         json_response = {
-            "request": request.url,
+            "resource": request.url,
             "client": request.remote_addr,
             "status_code": status_code,
             "result": result
