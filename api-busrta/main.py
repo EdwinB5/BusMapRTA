@@ -1,5 +1,6 @@
 # API Flask - BusMap
 
+from src import app
 
 if __name__ == '__main__':
-    pass
+    app.run(debug=True, port=80)
