@@ -49,7 +49,7 @@ export class Application {
     this.socket_client.on("connect", async () => {
       this.socket_status = true;
       let status_db = null;
-      console.log("Socket conectado");
+      console.info("Socket conectado");
       //Start simulation
       this.simulation = new Simulation(this.local_config.time_pause);
       
@@ -59,17 +59,17 @@ export class Application {
       } catch (error) {
         if (error.message === "read ECONNRESET" ||error.message === "El estado de la simulación no es válido, estado actual.") {
           status_db = false;
-          console.log(`La aplicación se detuvo debido a un fallo en la conexión de la base de datos, Error: ${error.message}.`);
+          console.error(`La aplicación se detuvo debido a un fallo en la conexión de la base de datos, Error: ${error.message}.`);
         } else if (error.message === "La simulacion esta detenida") {
           status_db = true;
-          console.log(
+          console.error(
             `La aplicación se detuvo a petición del usuario externo, Error: ${error.message}.`
           );
         }
       }
       if(status_db)
       {
-        console.log("Para que la aplicación inicie, verifique que el estado de la simulación no es 'detenido'.");
+        console.info("Para que la aplicación inicie, verifique que el estado de la simulación no es 'detenido'.");
         process.exit(1);
         
       }

@@ -1,5 +1,7 @@
 from flask import Flask, Blueprint
 from flask_restful import Api
+from flask_cors import CORS
+
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
@@ -8,6 +10,8 @@ from geoalchemy2 import Geometry
 import os
 
 app = Flask(__name__)
+#Configuración de CORS
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 app.config['SECRET_KEY'] = 'busmap2023'
 
