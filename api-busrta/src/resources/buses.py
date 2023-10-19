@@ -2,7 +2,7 @@ from flask import request
 from flask_restful import Resource
 from src import Base, session
 from src.utils.json_wrapper import format_json
-from src.utils.geometry import load_point, linestring_to_wkt
+from src.utils.geometry import load_point, linestring_to_wkt, wkb_to_linestring
 import requests
 
 import random
@@ -19,31 +19,43 @@ class Buses(Resource):
         data = []
         method = 'all'
         bus_id = request.args.get('id')
-        try:
-            bus_id = int(bus_id)
-        except:
-            return (f"The id {bus_id} is not a number (int)", 400)
+        municipio_id = request.args.get('municipio')
+        
+        if bus_id is not None:
+            try:
+                bus_id = int(bus_id)
+            except:
+                return (f"The id {bus_id} is not a number (int)", 400)
 
         try:
             query = self.session.query(self.Buses)
         except Exception:
             return ("The requested operation cannot be executed at this time.", 500)
+        
+        if municipio_id is not None:
+            query = query.filter_by(origen=municipio_id)
+            method='all'
 
         if bus_id and isinstance(bus_id, int):
             query = query.filter_by(id=bus_id)
             method = 'filter'
 
         query = query.all() if method == 'all' else [query.first()]
-
-        if query[0] == None:
+        
+        try:
+            if query[0] == None:
+                return ("Bus resource not found.", 404)
+        except:
             return ("Bus resource not found.", 404)
-
+        
         for bus in query:
             bus_data = {key: getattr(bus, key)
                         for key in bus.__table__.columns.keys()}
             if 'localizacion' in bus_data and bus_data['localizacion'] is not None:
                 bus_data['localizacion'] = load_point(
                     str(bus_data['localizacion']))
+            if 'ruta' in bus_data and bus_data['ruta'] is not None:
+                bus_data['ruta'] = wkb_to_linestring(str(bus_data['ruta']))
             data.append(bus_data)
         return data
 
@@ -69,16 +81,15 @@ class Buses(Resource):
                 str(municipio_destino.localizacion))
         except Exception as error:
             return (f'Not origen/destino has aparcadero, error {error}.', 400)
-        
 
         if municipio_origen.capacidad_maxima > municipio_origen.capacidad_actual:
             municipio_origen.capacidad_actual += 1
-            
+
             try:
                 url = f"http://router.project-osrm.org/route/v1/driving/{longitud_origen},{latitud_origen};{longitud_destino},{latitud_destino}?overview=full&geometries=geojson"
                 response = requests.get(url)
                 data = response.json()
-                
+
                 ruta = data['routes'][0]
                 distancia = ruta['distance']
                 geometry = linestring_to_wkt(ruta['geometry']['coordinates'])
@@ -86,7 +97,8 @@ class Buses(Resource):
                 return ('Something went wrong with open street map.', 500)
 
             json_data['localizacion'] = municipio_origen.localizacion
-            json_data['cupos_actuales'] = random.randint(1, json_data['cupos_maximos'])
+            json_data['cupos_actuales'] = random.randint(
+                1, json_data['cupos_maximos'])
             json_data['estado'] = 'aparcado'
             json_data['velocidad_promedio'] = random.randint(60, 80)
             json_data['ruta'] = geometry
