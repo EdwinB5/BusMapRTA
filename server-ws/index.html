@@ -12,8 +12,13 @@
       
       socket.on("connect", () => {
         console.log(socket.id);
+
+        socket.on("data_rta", (data_rta) => {
+          console.log("New Data",data_rta);
+        });
         
       });
+
     </script>
     <script
       src="https://cdn.socket.io/4.6.0/socket.io.min.js"

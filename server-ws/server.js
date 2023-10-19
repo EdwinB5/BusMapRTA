@@ -5,6 +5,8 @@ import { createServer } from "http";
 const port = 8080;
 const ip_http = `localhost`;
 
+const data_rta = ["Bus1", "Bus2", "Bus3"];
+
 const http_server = createServer(); //Create http server
 const server_socket = new WebSocketServer(http_server, {
   cors: {
@@ -15,14 +17,23 @@ const server_socket = new WebSocketServer(http_server, {
 
 server_socket.on("connection", (socket_client) => {
 
-  console.log("Conexión recibida");
+  console.log(`Connection received ${socket_client.handshake.address}`);
 
   socket_client.on("change", (data) => {
-    //console.log("Update received");
     console.log(data.message);
+    server_socket.emit("data_rta", data_rta);
   });
 
+  socket_client.on("disconnect", () => {
+    console.log(
+      `Client disconnected, ${socket_client.id}}, from ${socket_client.handshake.address}`
+    );
+  });
+
+
 });
+
+
 
 //LISTEN HTTPSERVER REQUEST
 http_server.listen(port, ip_http, () => {
