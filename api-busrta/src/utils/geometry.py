@@ -29,3 +29,15 @@ def linestring_to_wkt(line_coords):
     line = LineString(line_coords)
     wkt_line = line.wkt
     return wkt_line
+
+
+def wkb_to_linestring(wkb):
+    extension_bytes = bytes.fromhex(wkb)
+    geometry = loads(extension_bytes)
+    linestring_data = geometry.wkt.split("(")[1].split(")")[0]
+    coordinates = linestring_data.split(",")
+    result = []
+    for coord in coordinates:
+        x, y = coord.strip().split()
+        result.append([float(x), float(y)])
+    return result
