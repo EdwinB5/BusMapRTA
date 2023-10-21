@@ -138,7 +138,7 @@ export class Simulation extends IPusblisher {
    * Using pattern observer, add new suscriber to list
    * @param {Object} observer
    */
-  suscribe(observer) {
+  subscribe(observer) {
     this.suscribers.push(observer);
   }
 
@@ -146,8 +146,9 @@ export class Simulation extends IPusblisher {
    * Using pattern observer, notify to all suscribers entity changes
    */
   notify() {
+    let data = { before_time: this.before_time, after_time: this.after_time };
     this.suscribers.forEach((suscriber) => {
-      suscriber.update(this.before_time, this.after_time);
+      suscriber.update(data);
     });
   }
 }

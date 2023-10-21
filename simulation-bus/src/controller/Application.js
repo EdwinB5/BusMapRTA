@@ -1,5 +1,10 @@
+//Controllers
 import { Simulation } from "./Simulation.js";
+import { Aparcadero } from "./Aparcadero.js";
+//Utils
 import { readFileJSON } from "../utils/dump-data.js";
+
+//Libs
 import { io } from "socket.io-client";
 
 let APPLICATION = null;
@@ -50,9 +55,12 @@ export class Application {
       this.socket_status = true;
       let status_db = null;
       console.info("Socket conectado");
+      
       //Start simulation
       this.simulation = new Simulation(this.local_config.time_pause);
-      
+      this.aparcadero = new Aparcadero();
+      this.simulation.subscribe(this.aparcadero);
+
       try {
         await this.simulation.init();
         await this.simulation.start();

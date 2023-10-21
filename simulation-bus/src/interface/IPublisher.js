@@ -3,7 +3,7 @@ export default class IPublisher {
     this.suscribers = [];
   }
 
-  suscribe(suscriber) {
+  subscribe(suscriber) {
     throw new Error("Abstract method, it has that be implement.");
   }
 

@@ -41,7 +41,7 @@ const up = function (knex) {
       table.integer("ruta").unsigned();
       table.foreign("ruta").references("ruta.id");
 
-      table.float("indice_ruta").defaultTo(0);
+      table.integer("indice_ruta").defaultTo(0);
     })
     .createTable("simulacion", function (table) {
       table.increments("id").primary();
