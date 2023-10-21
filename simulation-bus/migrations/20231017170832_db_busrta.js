@@ -15,22 +15,33 @@ const up = function (knex) {
       table.integer("buses_no_disponibles");
       table.integer("buses_disponibles");
     })
+    .createTable("ruta", function (table) {
+      table.increments("id").primary();
+      table.integer("municipio_origen").unsigned().notNullable();
+      table.foreign("municipio_origen").references("municipio.id");
+      table.integer("municipio_destino").unsigned().notNullable();
+      table.foreign("municipio_destino").references("municipio.id");
+      table.float("distancia_total").notNullable();
+      table.specificType("ruta", "geometry(LINESTRING)").notNullable();
+      table.specificType("distancias", "float[]");
+    })
     .createTable("bus", function (table) {
       table.increments("id").primary();
       table.specificType("localizacion", "geometry(POINT)").notNullable();
       table.string("estado", 25).notNullable();
-      table.integer("origen").unsigned();
-      table.foreign("origen").references("municipio.id");
-      table.integer("destino").unsigned();
-      table.foreign("destino").references("municipio.id");
       table.datetime("fecha_salida");
       table.datetime("fecha_entrada");
       table.datetime("fecha_disponible");
       table.integer("cupos_maximos");
       table.integer("cupos_actuales");
       table.integer("velocidad_promedio").notNullable();
-      table.specificType("ruta", "geometry(LINESTRING)").notNullable();
-      table.float("distancia_viaje").notNullable();
+      table.float("distancias_actual").defaultTo(0);
+      table.float("tiempo_viaje").defaultTo(0);
+
+      table.integer("ruta").unsigned();
+      table.foreign("ruta").references("ruta.id");
+
+      table.float("indice_ruta").defaultTo(0);
     })
     .createTable("simulacion", function (table) {
       table.increments("id").primary();
@@ -60,13 +71,17 @@ const down = function (knex) {
       table.dropForeign("id_bus");
     })
     .table("bus", function (table) {
-      table.dropForeign("origen");
-      table.dropForeign("destino");
+      table.dropForeign("ruta");
+    })
+    .table("ruta", function (table) {
+      table.dropForeign("municipio_origen");
+      table.dropForeign("municipio_destino");
     })
     .dropTableIfExists("simulacion")
     .dropTableIfExists("municipio_bus")
     .dropTableIfExists("bus")
-    .dropTableIfExists("municipio");
+    .dropTableIfExists("municipio")
+    .dropTableIfExists("ruta");
 };
 
 const config = {

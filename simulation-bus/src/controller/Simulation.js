@@ -84,6 +84,10 @@ export class Simulation extends IPusblisher {
 
     console.log("Siguiente: " + state);
   }
+
+  /**
+   * Notify to all sockets connected changes made in simulation
+   */
   notifyChanges() {
     //Notificar cambios a los sockets conectados
     const message_i = {
