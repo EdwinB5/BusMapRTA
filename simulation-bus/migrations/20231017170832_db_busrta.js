@@ -35,7 +35,7 @@ const up = function (knex) {
       table.integer("cupos_maximos");
       table.integer("cupos_actuales");
       table.integer("velocidad_promedio").notNullable();
-      table.float("distancias_actual").defaultTo(0);
+      table.float("distancia_actual").defaultTo(0);
       table.float("tiempo_viaje").defaultTo(0);
 
       table.integer("ruta").unsigned();
