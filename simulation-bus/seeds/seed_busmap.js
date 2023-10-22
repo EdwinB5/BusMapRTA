@@ -7,6 +7,7 @@ import { mergeMunicipios, getMunicipios } from "../src/utils/dump-data.js";
 export async function seed(knex) {
   // Deletes ALL existing entries
   await knex("municipio").del();
+  await knex("ruta").del();
   await knex("simulacion").del();
 
   mergeMunicipios();

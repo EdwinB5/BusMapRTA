@@ -14,7 +14,7 @@ import { Application } from "./Application.js";
 import { sleep, toMS } from "../utils/Chrono.js";
 
 
-const STATES_SIMULATION = {
+export const STATES_SIMULATION = {
   INIT: "iniciado",
   RUNNING: "simulando",
   PAUSE: "pausado",
@@ -22,13 +22,19 @@ const STATES_SIMULATION = {
 };
 
 export class Simulation extends IPusblisher {
-  constructor(time_pause) {
+  constructor(time_pause, id_config_simulation) {
     super();
+    
     this.db = null;
+
+    this.id_config_simulation = id_config_simulation;
     this.config_simulation = null;
+    
     this.time_pause = time_pause; //1s
+    
     this.before_time = null;
     this.after_time = null;
+    
   }
 
   async init() {
@@ -107,7 +113,7 @@ export class Simulation extends IPusblisher {
   }
 
   async setConfigSimulation() {
-    this.config_simulation = await Simulacion.query().findById(1);
+    this.config_simulation = await Simulacion.getConfigById(this.id_config_simulation);
     this.checkStatusSimulation(this.config_simulation.estado);
   }
 

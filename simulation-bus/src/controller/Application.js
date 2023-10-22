@@ -57,7 +57,10 @@ export class Application {
       console.info("Socket conectado");
       
       //Start simulation
-      this.simulation = new Simulation(this.local_config.time_pause);
+      this.simulation = new Simulation(
+        this.local_config.time_pause,
+        this.local_config.id_config_simulation
+      );
       this.aparcadero = new Aparcadero();
       this.simulation.subscribe(this.aparcadero);
 

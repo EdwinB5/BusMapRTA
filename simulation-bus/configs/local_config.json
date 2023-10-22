@@ -3,5 +3,6 @@
   "url_socket_server": "ws://localhost:8080",
   "reconnection": true,
   "reconnection_attempts": 5,
-  "reconnection_delay": 1000
+  "reconnection_delay": 1000,
+  "id_config_simulation":1
 }

@@ -17,12 +17,12 @@ const up = function (knex) {
     })
     .createTable("ruta", function (table) {
       table.increments("id").primary();
-      table.integer("municipio_origen").unsigned().notNullable();
+      table.integer("municipio_origen").unsigned();
       table.foreign("municipio_origen").references("municipio.id");
-      table.integer("municipio_destino").unsigned().notNullable();
+      table.integer("municipio_destino").unsigned();
       table.foreign("municipio_destino").references("municipio.id");
-      table.float("distancia_total").notNullable();
-      table.specificType("ruta", "geometry(LINESTRING)").notNullable();
+      table.float("distancia_total");
+      table.specificType("ruta_trazada", "geometry(LINESTRING)");
       table.specificType("distancias", "float[]");
     })
     .createTable("bus", function (table) {
@@ -38,8 +38,8 @@ const up = function (knex) {
       table.float("distancia_actual").defaultTo(0);
       table.float("tiempo_viaje").defaultTo(0);
 
-      table.integer("ruta").unsigned();
-      table.foreign("ruta").references("ruta.id");
+      table.integer("fk_ruta").unsigned();
+      table.foreign("fk_ruta").references("ruta.id");
 
       table.integer("indice_ruta").defaultTo(0);
     })
@@ -71,7 +71,7 @@ const down = function (knex) {
       table.dropForeign("id_bus");
     })
     .table("bus", function (table) {
-      table.dropForeign("ruta");
+      table.dropForeign("fk_ruta");
     })
     .table("ruta", function (table) {
       table.dropForeign("municipio_origen");
@@ -79,9 +79,10 @@ const down = function (knex) {
     })
     .dropTableIfExists("simulacion")
     .dropTableIfExists("municipio_bus")
+    .dropTableIfExists("ruta")
     .dropTableIfExists("bus")
-    .dropTableIfExists("municipio")
-    .dropTableIfExists("ruta");
+    .dropTableIfExists("municipio");
+    
 };
 
 const config = {

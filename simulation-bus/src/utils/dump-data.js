@@ -90,3 +90,9 @@ export function getMunicipios() {
   const municipios = readFileJSON("./src/data/municipios_aparcaderos_full.json");
   return municipios.municipios_aparcaderos;
 }
+
+export function getRutas()
+{
+  const rutas = readFileJSON("./src/data/full_rutas.json");
+  return rutas;
+}

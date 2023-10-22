@@ -5,6 +5,11 @@ export default class Simulacion extends Model {
     return 'simulacion';
   }
 
+  static getConfigById(id)
+  {
+    return this.query().findById(id);
+  }
+
   static get jsonSchema() {
     return {
       type: 'object',

@@ -18,7 +18,8 @@ export default class Municipio extends Model {
         capacidad_maxima: { type: 'integer' },
         capacidad_actual: { type: 'integer' },
         buses_no_disponibles: { type: 'integer' },
-        buses_disponibles: { type: 'integer' }
+        buses_disponibles: { type: 'integer' },
+        tiene_aparcadero: {type: 'boolean'},
       }
     };
   }
