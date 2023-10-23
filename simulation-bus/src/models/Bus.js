@@ -1,11 +1,15 @@
 import { Model } from 'objection';
-
-import Municipio from './Municipio.js';
-
+import Ruta from './Ruta.js';
 
 export default class Bus extends Model {
   static get tableName() {
     return 'bus';
+  }
+
+  static getBusbyStatus(status, select_fields="*") {
+    return this.query()
+    .select(select_fields)
+    .where("estado", status)
   }
 
   static get jsonSchema() {
@@ -17,38 +21,31 @@ export default class Bus extends Model {
         id: { type: 'integer' },
         localizacion: { type: 'object' },
         estado: { type: 'string', maxLength: 25 },
-        origen: { type: 'integer' },
-        destino: { type: 'integer' },
         fecha_salida: { type: 'datetime' },
         fecha_entrada: { type: 'datetime' },
-        duracion_aparcadero: { type: 'datetime' },
         fecha_disponible: { type: 'datetime' },
         cupos_maximos: { type: 'integer' },
-        cupos_actuales: { type: 'integer' }
+        cupos_actuales: { type: 'integer' },
+        velocidad_promedio: { type: 'integer' },
+        distancia_actual: { type: 'float' },
+        tiempo_viaje: { type: 'float' },
+        fk_ruta: { type: 'integer' },
+        indice_ruta: { type: 'integer' }
       }
     };
   }
 
   static get relationMappings() {
-    /** Pasar codigo de relacion de ruta con municipio
-     * return {
-      origen: {
+    return {
+      ruta: {
         relation: Model.BelongsToOneRelation,
-        modelClass: Municipio,
+        modelClass: Ruta,
         join: {
-          from: 'bus.origen',
-          to: 'municipio.id'
-        }
-      },
-      destino: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: Municipio,
-        join: {
-          from: 'bus.destino',
-          to: 'municipio.id'
+          from: 'bus.fk_ruta',
+          to: 'ruta.id'
         }
       }
-    };
-     */
+    }
+    
   }
 }

@@ -153,8 +153,8 @@ export class Simulation extends IPusblisher {
    */
   notify() {
     let data = { before_time: this.before_time, after_time: this.after_time };
-    this.suscribers.forEach((suscriber) => {
-      suscriber.update(data);
+    this.suscribers.forEach( async (suscriber) => {
+      await suscriber.update(data);
     });
   }
 }

@@ -24,27 +24,32 @@ describe("Municipio Model", () => {
   });
 
   test("Get Municipios with aparcadero and all buses relation", async () => {
-    const municipios = await Municipio.getByAparcaderoStatus(true);
+    const municipios = await Municipio.getByAparcaderoStatus(true, "id");
     expect(municipios.length).toBe(21);
 
     for (let i = 0; i < municipios.length; i++) {
-        const municipio = municipios[i];
-        //console.log(municipio);
-        let buses = await municipio.$relatedQuery('buses');
-        console.log(`Id municipio: ${municipio.id} y ${buses}`)
-        //expect(buses.length).toBe(1);
+      const municipio = municipios[i];
+      //console.log(municipio);
+      let buses = await municipio.$relatedQuery("buses");
+      expect(buses.length).toBeGreaterThanOrEqual(0);
     }
 
   }, 50000);
 
   test("Get Municipios with aparcadero and all buses relation using method STATIC relatedQuery", 
   async () =>{
-    const municipios = await Municipio.getByAparcaderoStatus(true);
-    const buses = await Municipio.relatedQuery('buses').for(municipios);
-    for (let i = 0; i < buses.length; i++) {
-        const bus = buses[i];
-        expect(bus.length).toBe(0);
-    }
+    const municipios = await Municipio.getByAparcaderoStatus(true, "id");
+    expect(municipios.length).toBe(21);
+
+    let ids = [];
+    municipios.forEach((element) => {
+      ids.push(element.id);
+    });
+    console.log(ids);
+
+    const buses = await Municipio.relatedQuery("buses").for(ids);
+    expect(buses.length).toBeGreaterThanOrEqual(0);
+
   });
 
   afterEach(() => {

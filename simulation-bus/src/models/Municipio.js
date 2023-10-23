@@ -4,8 +4,11 @@ export default class Municipio extends Model {
   static get tableName() {
     return "municipio";
   }
-  static getByAparcaderoStatus(status) {
-    return this.query().where("tiene_aparcadero", status);
+  static getByAparcaderoStatus(status, select_fields = "*") {
+     
+    return this.query().
+    select(select_fields)
+    .where("tiene_aparcadero", status);
   }
   static get relationMappings () {
     return {
