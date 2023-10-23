@@ -30,9 +30,8 @@ export default class Bus extends Model {
   }
 
   static get relationMappings() {
-    
-
-    return {
+    /** Pasar codigo de relacion de ruta con municipio
+     * return {
       origen: {
         relation: Model.BelongsToOneRelation,
         modelClass: Municipio,
@@ -50,5 +49,6 @@ export default class Bus extends Model {
         }
       }
     };
+     */
   }
 }

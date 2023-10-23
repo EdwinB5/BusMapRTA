@@ -1,4 +1,7 @@
-import { mergeMunicipios, getMunicipios } from "../src/utils/dump-data.js";
+import {
+  getMunicipios,
+  writeFileJSON,
+} from "../src/utils/dump-data.js";
 
 /**
  * @param { import("knex").Knex } knex
@@ -6,16 +9,23 @@ import { mergeMunicipios, getMunicipios } from "../src/utils/dump-data.js";
  */
 export async function seed(knex) {
   // Deletes ALL existing entries
-  await knex("municipio").del();
+  await knex("municipio_bus").del();
+  await knex("bus").del();
   await knex("ruta").del();
+  await knex("municipio").del();
   await knex("simulacion").del();
 
-  mergeMunicipios();
+  //mergeMunicipios();
   const municipios = getMunicipios();
-  municipios.forEach(async function (municipio) {
+  let ids_municipios = [];
+  let id_g = 1;
+  for (let i = 0; i < municipios.length; i++) {
+    const municipio = municipios[i];
+    
     if (municipio.es_aparcadero) {
       await knex("municipio").insert([
         {
+          id: id_g,
           nombre: municipio.nombre,
           localizacion: { type: "Point", coordinates: municipio.localizacion },
           extension: { type: "MultiPolygon", coordinates: municipio.extension },
@@ -29,6 +39,7 @@ export async function seed(knex) {
     } else {
       await knex("municipio").insert([
         {
+          id: id_g,
           nombre: municipio.nombre,
           extension: { type: "MultiPolygon", coordinates: municipio.extension },
           tiene_aparcadero: municipio.es_aparcadero,
@@ -38,7 +49,21 @@ export async function seed(knex) {
         },
       ]);
     }
-  });
+
+    if (municipio.es_aparcadero) {
+      ids_municipios.push({
+        id: id_g,
+        nombre: municipio.nombre,
+        localizacion: municipio.localizacion,
+      });
+    }
+    id_g++;
+  }
+
+  writeFileJSON(ids_municipios, "./src/data/entity_ids/ids_municipios.json");
+
+  console.log(`Municipios insertados: ${id_g}`);
+
   await knex("simulacion").insert([
     {
       id: 1,
@@ -50,4 +75,8 @@ export async function seed(knex) {
       estado: "iniciado",
     },
   ]);
+
+  console.log("Simulacion insertada");
+
+  knex.raw(`ALTER SEQUENCE municipio_id_seq RESTART WITH ${117}`);
 }

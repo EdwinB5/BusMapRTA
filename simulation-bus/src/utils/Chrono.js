@@ -29,3 +29,12 @@ export function toSeconds(ms) {
 export function getDeltaTime(before_time, after_time) {
   return after_time - before_time;
 }
+
+/**
+ * From KM/H to M/S
+ * @param {*} kmh 
+ * @returns 
+ */
+export function KMHtoMS(kmh) {
+  return kmh / 3.6;
+}

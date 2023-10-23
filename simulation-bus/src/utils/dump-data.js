@@ -1,3 +1,4 @@
+import exp from "constants";
 import fs from "fs";
 
 const file_path_in = "../data/limites_colombia.json";
@@ -49,8 +50,8 @@ export function writeFileJSON(data, path) {
 }
 
 export function mergeMunicipios() {
-  const path_municipios_aparcaderos = "./src/data/municipios_aparcaderos.json";
-  const path_limites_cundimarca = "./src/data/limites_cundinamarca.json";
+  const path_municipios_aparcaderos = "../data/municipios_aparcaderos.json";
+  const path_limites_cundimarca = "../data/limites_cundinamarca.json";
 
   let municipios = readFileJSON(path_municipios_aparcaderos); //municipios_aparcaderos
   let limites_cundinamarca = readFileJSON(path_limites_cundimarca); //limites_cundinamarca
@@ -91,8 +92,91 @@ export function getMunicipios() {
   return municipios.municipios_aparcaderos;
 }
 
-export function getRutas()
+export function getBuses()
 {
-  const rutas = readFileJSON("./src/data/full_rutas.json");
+  const buses = readFileJSON("./src/data/entity_ids/buses.json");
+  return buses;
+}
+
+export function getBusesMunicipios() {
+  const buses_municipios = readFileJSON("./src/data/entity_ids/ids_buses.json");
+  return buses_municipios;
+}
+
+export function randINT(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+} 
+
+export async function getRutas() {
+  
+  try {
+    const rutas_file = readFileJSON("./src/data/entity_ids/rutas.json");
+    return rutas_file;
+  } catch (error) {
+    return await generateRutas();
+  }
+}
+
+export async function generateRutas() {
+  const municipios = readFileJSON("./src/data/entity_ids/ids_municipios.json");
+  let rutas = [];
+  let buses = {};
+
+  let id_ruta = 1;
+  for (let i = 0; i < municipios.length; i++) {
+    for (let j = 0; j < municipios.length; j++) {
+      const municipio_j = municipios[j];
+      const municipio_i = municipios[i];
+
+      if (municipio_i.id != municipio_j.id) {
+        let loc_origen = municipio_i.localizacion;
+        let loc_destino = municipio_j.localizacion;
+        let result = await consumeRutasOSMR(loc_origen, loc_destino);
+
+        let ruta = {
+          id: id_ruta,
+          id_origen: municipio_i.id,
+          id_destino: municipio_j.id,
+          distancia: result.distancia_total,
+          ruta_trazada: result.ruta_trazada,
+          distancias_array: result.distancias,
+        };
+
+        rutas.push(ruta);
+        buses[municipio_i.nombre] = {
+          fk_ruta: id_ruta,
+          localizacion: municipio_i.localizacion,
+          id_municipio: municipio_i.id,
+        };
+        id_ruta++;
+      }
+    }
+  }
+  writeFileJSON(rutas, "./src/data/entity_ids/rutas.json");
+  writeFileJSON(buses, "./src/data/entity_ids/buses.json");
+
   return rutas;
+}
+
+
+export async function consumeRutasOSMR(loc_a, loc_b) {
+
+  let lon_a = loc_a[1];
+  let lat_a = loc_a[0];
+  let lon_b = loc_b[1];
+  let lat_b = loc_b[0];
+
+  let api = `https://router.project-osrm.org/route/v1/driving/${lon_a},${lat_a};${lon_b},${lat_b}?overview=full&geometries=geojson&annotations=distance`;
+  let response = await fetch(api, {
+      method: "GET",
+    });
+  let data = await response.json();
+
+  let result = {
+    distancia_total: data.routes[0].distance,
+    ruta_trazada: data.routes[0].geometry.coordinates,
+    distancias: data.routes[0].legs[0].annotation.distance,
+  };
+  console.log("Ruta consultada", loc_a);
+  return result;
 }
