@@ -5,6 +5,12 @@ import knexConfig from "../../knexfile.js";
 //MODELS OBJECTION
 import { Model } from "objection";
 import Bus, { STATES_BUS } from "../models/Bus.js";
+import MunicipioBus from "../models/MunicipioBus.js";
+import Municipio, { MODE } from "../models/Municipio.js";
+import Simulacion from "../models/Simulacion.js";
+
+//CONTROLLER
+import { Simulation } from "./Simulation.js";
 
 import Ruta from "../models/Ruta.js";
 
@@ -20,9 +26,10 @@ import {
   MtoKm,
   getTime,
   SecondsToHours,
+  getDistance,
 } from "../utils/Chrono.js";
 import { HexFromGeometry } from "../utils/geometry.js";
-import Simulacion from "../models/Simulacion.js";
+
 
 export class Aparcadero extends ISuscriber {
   constructor() {
@@ -32,7 +39,7 @@ export class Aparcadero extends ISuscriber {
     this.db = knex(knexConfig.development);
     Model.knex(this.db);
 
-    this.data_actual = null;
+    this.data = null;
   }
   /**
    *
@@ -41,7 +48,7 @@ export class Aparcadero extends ISuscriber {
   async update(data) {
     //Implement
     console.log("Update >>>>>>>>>>>> Aparcadero: ", data);
-    this.data_actual = data;
+    this.data = data;
     await this.processChange(data.before_time, data.after_time);
   }
 
@@ -66,7 +73,7 @@ export class Aparcadero extends ISuscriber {
      *
      */
 
-    let buses = await Bus.getBuses(); //Falta método
+    let buses = await Bus.getBuses();
 
     for (let i = 0; i < buses.length; i++) {
       const bus = buses[i];
@@ -88,66 +95,153 @@ export class Aparcadero extends ISuscriber {
   }
 
   async managePARKED(bus) {
-    if (this.data_actual.after_time >= bus.fecha_salida) {
-      
+    if (this.data.after_time >= bus.fecha_salida) {
       //Calculo de delta tiempo
-      let delta_time = getDeltaTime(this.data.after_time, bus.fecha_salida);
+      let delta_time = getDeltaTime(bus.fecha_salida, this.data.after_time);
       delta_time = toSeconds(delta_time);
-
-      //Cambios de estado
-      bus.estado = STATES_BUS.MOVING; //Actualizar en BD
 
       //Calcular distancia recorrida
 
-      let distancia_recorrida = getDistance(KMHtoMS(bus.velocidad_promedio),delta_time);
+      let distancia_recorrida = getDistance(
+        KMHtoMS(bus.velocidad_promedio),
+        delta_time
+      );
 
-      bus.distancia_actual = MtoKm(distancia_recorrida); //Actualizar en BD
-      bus.tiempo_viaje;
+      let distancia_actual = MtoKm(distancia_recorrida); //Actualizar en BD
+      
       //Se puede optimizar si se verifica que la distancia actual sea igual a 0 para no hacer la consulta de ruta
-
       let ruta_bus = await Ruta.getRutaById(bus.fk_ruta);
       let ruta_trazada = HexFromGeometry(ruta_bus.ruta_trazada).coordinates;
 
+      //CAMBIO DE ESTADO A MOVING
+      console.log("bus: ", bus.id, STATES_BUS.MOVING, distancia_actual);
+
+      bus = await Bus.updateBus(bus.id, {
+        estado: STATES_BUS.MOVING,
+        distancia_actual: distancia_actual,
+      });
+      console.log("bus", bus)
+      //DISMINUIR CAPACIDAD EN SU MUNICIPIO ORIGEN
+      Municipio.updateCapacities(ruta_bus.municipio_origen);
+
+      //QUITAR RELACION DE BUS CON SU ORIGEN
+      /* AQUI =>*/ await MunicipioBus.deleteMunicipioBus(
+        ruta_bus.municipio_origen,
+        bus.id
+      ); //Actualizar en BD
+
+      //SE VERIFICA SI LLEGO AL FINAL DE LA RUTA O DESTINO
       if (bus.distancia_actual >= ruta_bus.distancia_total) {
-
-
+        //Establecimiento del origen cuando llega al fin
         let nuevo_localizacion = ruta_trazada[ruta_trazada.length - 1]; //Ultimo punto de la ruta
-        bus.localizacion = nuevo_localizacion; //Actualizar en BD
-        bus.fecha_entrada = bus.fecha_salida + getTime(bus.distancia_actual, bus.velocidad_promedio); //Actualizar en BD
-        bus.indice_ruta = 0; //Actualizar en BD
-        bus.distancia_actual = 0; //Actualizar en BD
-        bus.tiempo_viaje += SecondsToHours(toSeconds(getDeltaTime(bus.fecha_salida, bus.fecha_entrada))); //Actualizar en BD
 
-        if (bus.tiempo_viaje > Simulacion.maximo_viaje) {
-          bus.estado = STATES_BUS.NOT_AVAILABLE; //Actualizar en BD
-          bus.fecha_disponible = bus.fecha_entrada + bus.tiempo_viaje; //Actualizar en BD
-          bus.tiempo_viaje = 0; //Actualizar en BD
-        } else if(bus.tiempo_viaje <= Simulacion.maximo_viaje){
-          bus.estado = STATES_BUS.AVAILABLE; //Actualizar en BD
+        bus = await Bus.updateBus(bus.id, {
+          localizacion: { type: "Point", coordinates: nuevo_localizacion },
+        });
+
+        //CAMBIAR RELACION DE BUS CON SU NUEVO ORIGEN POR MEDIO DEL DESTINO
+        // AQUI =>
+        let id_municipio_origen = ruta_bus.municipio_destino;
+        await MunicipioBus.insertMunicipioBus(id_municipio_origen, bus.id); //Actualizar en BD
+
+        //ACTUALIZACIÓN DE FECHA DE ENTRADA
+        let fecha_entrada = new Date(bus.fecha_salida);
+        fecha_entrada.setHours( fecha_entrada.getHours() + getTime(bus.distancia_actual, bus.velocidad_promedio));
+        //REINICIO DE VARIABLES
+
+        //SE ASIGNA EL TIEMPO DE VIAJE QUE LLEVA DICHO BUS
+        let tiempo_viaje =
+          SecondsToHours(
+            toSeconds(
+              getDeltaTime(bus.fecha_salida, fecha_entrada.toISOString())
+            )
+          ) + bus.tiempo_viaje;
+        
+        bus = await Bus.updateBus(bus.id, {
+          fecha_entrada: fecha_entrada.toISOString(),
+          indice_ruta: 0,
+          distancia_actual: 0,
+          distancia_teorica: 0,
+          tiempo_viaje: tiempo_viaje,
+        });
+
+        //SE VERIFICA SI EL TIEMPO DE VIAJE ES MAYOR AL MAXIMO DE VIAJE
+        if (bus.tiempo_viaje > Simulation.maximo_viaje) {
+          let estado = STATES_BUS.NOT_AVAILABLE;
+
+          let fecha_disponible = new Date(bus.fecha_entrada);
+          fecha_disponible.setHours(fecha_disponible.getHours() + bus.tiempo_viaje);
+
+          bus = await Bus.update(bus.id, {
+            estado: estado,
+            fecha_disponible: fecha_disponible.toISOString(),
+            tiempo_viaje: 0,
+          });
+
+          await Municipio.updateCapacities(
+            MODE.INCREMENT,
+            id_municipio_origen,
+            STATES_BUS.NOT_AVAILABLE
+          );
+        } else if (bus.tiempo_viaje <= Simulacion.maximo_viaje) {
+
+          let estado = STATES_BUS.AVAILABLE; //Actualizar en BD
+
+          bus = await Bus.update(bus.id, {
+            estado: estado,
+          });
+
+          await Municipio.updateCapacities(
+            MODE.INCREMENT,
+            id_municipio_origen,
+            STATES_BUS.AVAILABLE
+          );
+
         }
-
       } else {
+        // EN ESTE PUNTO SE VA A MOVER EL BUS
         let distancias = ruta_bus.distancias;
-        let suma_distancia_t = bus.distancia_teorica
+        let suma_distancia_t = bus.distancia_teorica;
+
+        //SE RECORRE CADA DISTANCIA Y SE SUMA TEMPORALMENTE
 
         for (let i = bus.indice_ruta; i < distancias.length; i++) {
           const distancia_i = distancias[i];
           suma_distancia_t += distancia_i;
 
+          //EL BUS NO RECORRIO LA SUFICIENTE DISTANCIA PARA LLEGAR AL SIGUIENTE PUNTO
           if (suma_distancia_t > bus.distancia_actual) {
-            //Se cambia al punto anterior
-            bus.indice_ruta = i;
-            let nuevo_localizacion = ruta_trazada[bus.indice_ruta]; //Posible cambio
-            bus.localizacion = nuevo_localizacion; //Actualizar en BD
+            //SE CAMBIA EL INDICE DE RUTA
+            let indice_ruta = i
+            //CAMBIO DE LOCALIZACION PUNTO ANTERIOR
+            let nuevo_localizacion = ruta_trazada[indice_ruta];
+
+            bus = await Bus.updateBus(bus.id, {
+              localizacion: { type: "Point", coordinates: nuevo_localizacion }, 
+              indice_ruta: indice_ruta
+            });
+            
             break;
-          } else if (suma_distancia_t == bus.distancia_actual) {
-            //Se cambia al siguiente punto
-            bus.indice_ruta = i + 1
-            let nuevo_localizacion = ruta_trazada[bus.indice_ruta]; //Posible cambio
-            bus.localizacion = nuevo_localizacion; //Actualizar en BD
+            
+          } else if (suma_distancia_t == bus.distancia_actual) { //EL BUS RECORRIO LA DISTANCIA EXACTA PARA LLEGAR AL SIGUIENTE PUNTO
+        
+            //SE CAMBIA EL INDICE DE RUTA
+            let indice_ruta = i + 1;
+
+            //CAMBIO DE LOCALIZACION PUNTO EXACTO
+            let nuevo_localizacion = ruta_trazada[indice_ruta]; //Cambio de localización
+
+            bus = await Bus.updateBus(bus.id, {
+              localizacion: { type: "Point", coordinates: nuevo_localizacion },
+              indice_ruta: indice_ruta
+            });
+
             break;
           }
         }
+        //SE ITERA EN LAS DISTANCIAS
+        await Bus.updateBus(bus.id, {distancia_teorica: suma_distancia_t});
+        
       }
     } else {
       console.log(`El bus ${bus.id} no ha salido aun`);

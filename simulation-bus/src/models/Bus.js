@@ -17,6 +17,10 @@ export default class Bus extends Model {
     return this.query().select(select_fields).where("estado", status);
   }
 
+  static updateBus(bus_id, object={}) {
+    return this.query().findById(bus_id).patch(object);
+  }
+
   static getBuses(select_fields = ["*"]) {
     return this.query().select(select_fields).whereNot("estado", STATES_BUS.NOT_AVAILABLE);
   }
@@ -37,16 +41,17 @@ export default class Bus extends Model {
         id: { type: "integer" },
         localizacion: { type: "object" },
         estado: { type: "string", maxLength: 25 },
-        fecha_salida: { type: "datetime" },
-        fecha_entrada: { type: "datetime" },
-        fecha_disponible: { type: "datetime" },
+        fecha_salida: { type: "string", format: "date-time" },
+        fecha_entrada: { type: "string", format: "date-time" },
+        fecha_disponible: { type: "string", format: "date-time" },
         cupos_maximos: { type: "integer" },
         cupos_actuales: { type: "integer" },
         velocidad_promedio: { type: "integer" },
-        distancia_actual: { type: "float" },
-        tiempo_viaje: { type: "float" },
+        distancia_actual: { type: "number" },
+        tiempo_viaje: { type: "number" },
         fk_ruta: { type: "integer" },
         indice_ruta: { type: "integer" },
+        distancia_teorica: { type: "number" },
       },
     };
   }

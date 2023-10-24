@@ -68,7 +68,7 @@ export default class Ruta extends Model {
         destino: { type: "integer" },
         distancia_total: { type: "float" },
         distancias: { type: "float[]" },
-        ruta_trazada: { type: "LineString" },
+        ruta_trazada: { type: "LineString" }
       },
     };
   }

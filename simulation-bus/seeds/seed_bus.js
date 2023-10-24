@@ -9,6 +9,7 @@ import {
  * @returns { Promise<void> } */
 export async function seed(knex) {
   // Deletes ALL existing entries
+  await knex("municipio_bus").del();
   await knex("bus").del();
 
   let ids_buses = [];
@@ -36,6 +37,7 @@ export async function seed(knex) {
         tiempo_viaje: 0,
         fk_ruta: bus.fk_ruta,
         indice_ruta: 0,
+        distancia_teorica: 0,
       },
     ]);
 

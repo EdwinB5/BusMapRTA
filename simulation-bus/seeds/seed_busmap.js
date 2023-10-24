@@ -28,7 +28,7 @@ export async function seed(knex) {
           id: id_g,
           nombre: municipio.nombre,
           localizacion: { type: "Point", coordinates: municipio.localizacion },
-          extension: { type: "Polygon", coordinates: municipio.extension },
+          extension: { type: "MultiPolygon", coordinates: municipio.extension },
           tiene_aparcadero: municipio.es_aparcadero,
           capacidad_maxima: municipio.capacidad_maxima,
           capacidad_actual: 0,
@@ -41,7 +41,7 @@ export async function seed(knex) {
         {
           id: id_g,
           nombre: municipio.nombre,
-          extension: { type: "Polygon", coordinates: municipio.extension },
+          extension: { type: "MultiPolygon", coordinates: municipio.extension },
           localizacion: { type: "Point", coordinates: [0,0] },
           tiene_aparcadero: municipio.es_aparcadero,
           capacidad_actual: 0,

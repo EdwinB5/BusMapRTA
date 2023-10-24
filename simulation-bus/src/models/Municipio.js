@@ -1,5 +1,12 @@
 import { Model } from "objection";
 import Bus from "./Bus.js";
+
+
+export const MODE = {
+    "DECREMENT": "decrement",
+    "INCREMENT": "increment"
+  }
+
 export default class Municipio extends Model {
   static get tableName() {
     return "municipio";
@@ -10,6 +17,21 @@ export default class Municipio extends Model {
     select(select_fields)
     .where("tiene_aparcadero", status);
   }
+
+  static updateMunicipio(municipio_id, object = {}) {
+    return this.query().findById(municipio_id).patch(object)
+  }
+  
+  static updateCapacities(mode=MODE.DECREMENT, id_municipio, column="capacidad_actual", value=1) 
+  {
+    if (mode === MODE.DECREMENT) {
+      return this.query().findById(id_municipio).decrement(column, value);
+    } else
+    {
+      return this.query().findById(id_municipio).increment(column, value);
+    }
+  }
+
   static get relationMappings () {
     return {
       buses: {

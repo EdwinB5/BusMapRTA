@@ -69,7 +69,7 @@ export class Simulation extends IPusblisher {
         this.config_simulation.estado === STATES_SIMULATION.INIT
       ) {
         await this.increaseTime();
-        Simulacion.setMaximoViaje(this.config_simulation.maximo_viaje);
+        Simulation.setMaximoViaje(this.config_simulation.maximo_viaje);
         this.notify();
         this.notifyChanges();
         await this.waitTime();

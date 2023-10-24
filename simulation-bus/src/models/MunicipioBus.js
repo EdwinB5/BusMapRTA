@@ -8,6 +8,13 @@ export default class MunicipioBus extends Model {
   static get tableName() {
     return 'municipio_bus';
   }
+  static deleteMunicipioBus(id_municipio, id_bus) {
+    return MunicipioBus.query().delete().where('id_municipio', id_municipio).andWhere('id_bus', id_bus);
+  }
+
+  static insertMunicipioBus(id_municipio, id_bus) {
+    return MunicipioBus.query().insert({ id_municipio: id_municipio, id_bus: id_bus }).returning(['id_municipio', 'id_bus']);
+  }
 
   static get jsonSchema() {
     return {

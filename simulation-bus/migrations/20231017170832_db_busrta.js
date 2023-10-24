@@ -37,11 +37,12 @@ const up = function (knex) {
       table.integer("velocidad_promedio").notNullable();
       table.float("distancia_actual").defaultTo(0);
       table.float("tiempo_viaje").defaultTo(0);
-
       table.integer("fk_ruta").unsigned();
+
       table.foreign("fk_ruta").references("ruta.id");
 
       table.integer("indice_ruta").defaultTo(0);
+      table.float("distancia_teorica").defaultTo(0);
     })
     .createTable("simulacion", function (table) {
       table.increments("id").primary();
