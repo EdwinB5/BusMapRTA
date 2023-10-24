@@ -4,8 +4,8 @@ import { Model } from "objection";
 import Municipio from "./Municipio.js";
 
 export const RUTA_PARAMS = {
-    ORIGIN: "origen",
-    DESTINATION: "destino",
+  ORIGIN: "origen",
+  DESTINATION: "destino",
 };
 
 export default class Ruta extends Model {
@@ -13,7 +13,7 @@ export default class Ruta extends Model {
     return "ruta";
   }
   /**
-   * @param {*} ids_ruta array with ids of ruta. By default empty array, with 
+   * @param {*} ids_ruta array with ids of ruta. By default empty array, with
    * @param {*} RUTA RUTA_PARAMS.ORIGIN or RUTA_PARAMS.DESTINATION. By default RUTA_PARAMS.ORIGIN
    * @param {*} select_fields fields to select. By default all fields are selected
    * @returns array with municipios from ruta
@@ -25,6 +25,11 @@ export default class Ruta extends Model {
   ) {
     return this.relatedQuery(RUTA).for(ids_ruta).select(select_fields);
   }
+
+  static getRutaById(id_ruta) {
+    return this.query().findById(id_ruta);
+  }
+
   static get relationMappings() {
     return {
       origen: {
@@ -63,7 +68,7 @@ export default class Ruta extends Model {
         destino: { type: "integer" },
         distancia_total: { type: "float" },
         distancias: { type: "float[]" },
-        ruta_trazada: { type: "object" },
+        ruta_trazada: { type: "LineString" },
       },
     };
   }

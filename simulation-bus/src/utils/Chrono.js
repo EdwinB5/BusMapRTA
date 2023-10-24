@@ -20,6 +20,10 @@ export function toSeconds(ms) {
   return ms / 1000;
 }
 
+export function SecondsToHours(seconds) {
+  return seconds / 3600;
+}
+
 /**
  * Get delta time in milliseconds
  * @param {number} before_time
@@ -37,4 +41,21 @@ export function getDeltaTime(before_time, after_time) {
  */
 export function KMHtoMS(kmh) {
   return kmh / 3.6;
+}
+/**
+ * 
+ * @param {*} distance 
+ * @param {*} speed 
+ * @returns 
+ */
+export function getTime(distance, speed) {
+  return distance / speed;
+}
+
+export function getDistance(speed, time) {
+  return speed * time; 
+}
+
+export function MtoKm(distance) {
+  return distance / 1000;
 }

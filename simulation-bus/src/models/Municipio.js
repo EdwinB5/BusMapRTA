@@ -4,7 +4,7 @@ export default class Municipio extends Model {
   static get tableName() {
     return "municipio";
   }
-  static getByAparcaderoStatus(status, select_fields = "*") {
+  static getByAparcaderoStatus(status, select_fields = ["*"]) {
      
     return this.query().
     select(select_fields)

@@ -22,6 +22,9 @@ export const STATES_SIMULATION = {
 };
 
 export class Simulation extends IPusblisher {
+
+  static maximo_viaje = 0;
+
   constructor(time_pause, id_config_simulation) {
     super();
     
@@ -34,8 +37,9 @@ export class Simulation extends IPusblisher {
     
     this.before_time = null;
     this.after_time = null;
-    
   }
+
+
 
   async init() {
     //Init DB with knex and set DB to Model for Objection.js lib
@@ -65,6 +69,7 @@ export class Simulation extends IPusblisher {
         this.config_simulation.estado === STATES_SIMULATION.INIT
       ) {
         await this.increaseTime();
+        Simulacion.setMaximoViaje(this.config_simulation.maximo_viaje);
         this.notify();
         this.notifyChanges();
         await this.waitTime();
@@ -89,6 +94,14 @@ export class Simulation extends IPusblisher {
     });
 
     console.log("Siguiente: " + state);
+  }
+
+  static setMaximoViaje(maximo_viaje) {
+    Simulacion.maximo_viaje = maximo_viaje;
+  }
+
+  static getMaximoViaje() {
+    return Simulacion.maximo_viaje;
   }
 
   /**

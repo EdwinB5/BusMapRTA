@@ -65,3 +65,24 @@ describe("Bus Model", () => {
     Model.knex().destroy();
   });
 });
+
+describe("Get Buses without estado not equal no_disponible", () => {
+  beforeEach(() => {
+    let db = knex(knexConfig.development);
+    Model.knex(db);
+  });
+
+  test("buses xd", async () => {
+
+    const buses = await Bus.getBuses();
+    console.log(buses);
+    expect(buses).not.toBeNull();
+    expect(buses.length).toBe(6);
+
+  });
+
+
+  afterEach(() => {
+    Model.knex().destroy();
+  }); 
+  });

@@ -38,7 +38,8 @@ describe("Municipio Model", () => {
 
   test("Get Municipios with aparcadero and all buses relation using method STATIC relatedQuery", 
   async () =>{
-    const municipios = await Municipio.getByAparcaderoStatus(true, "id");
+    const municipios = await Municipio.getByAparcaderoStatus(true);
+    console.log(municipios);
     expect(municipios.length).toBe(21);
 
     let ids = [];
