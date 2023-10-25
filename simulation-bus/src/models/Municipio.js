@@ -24,10 +24,12 @@ export default class Municipio extends Model {
   
   static updateCapacities(mode=MODE.DECREMENT, id_municipio, column="capacidad_actual", value=1) 
   {
-    if (mode === MODE.DECREMENT) {
+    if (mode == MODE.DECREMENT) {
+      console.log("Decrementado");
       return this.query().findById(id_municipio).decrement(column, value);
     } else
     {
+      console.log("Incrementado");
       return this.query().findById(id_municipio).increment(column, value);
     }
   }
@@ -38,12 +40,12 @@ export default class Municipio extends Model {
         relation: Model.ManyToManyRelation,
         modelClass: Bus,
         join: {
-          from: "municipio.id",
+          from: 'municipio.id',
           through: {
-            from: "municipio_bus.id_municipio",
-            to: "municipio_bus.id_bus",
+            from: 'municipio_bus.id_municipio',
+            to: 'municipio_bus.id_bus',
           },
-          to: "bus.id",
+          to: 'bus.id',
         },
       },
     };

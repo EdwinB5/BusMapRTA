@@ -106,7 +106,14 @@ export class Aparcadero extends ISuscriber {
       await Bus.updateBus(bus.id, { estado: estado_bus, distancia_actual: distancia_actual });
 
       //CAPACIDADES MUNICIPIO
-      await Municipio.updateCapacities(MODE.DECREMENT, ruta_bus.municipio_origen, 'capacidad_actual', 1);
+      const trx_tempo = await Model.startTransaction();
+      try {
+        await Municipio.updateCapacities(MODE.DECREMENT, ruta_bus.municipio_origen, 'capacidad_actual', 1);
+        trx_tempo.commit();
+      } catch (error) {
+        trx_tempo.rollback();
+      }
+
       await MunicipioBus.deleteMunicipioBus(ruta_bus.municipio_origen, bus.id);
 
       //console.log(`distancia_actual ${KmToM(distancia_actual)} | Total: ${ruta_bus.distancia_total} | Distancia teorica ${bus.distancia_teorica}`);
