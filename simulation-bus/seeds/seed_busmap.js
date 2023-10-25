@@ -79,5 +79,5 @@ export async function seed(knex) {
 
   console.log("Simulacion insertada");
 
-  knex.raw(`ALTER SEQUENCE municipio_id_seq RESTART WITH ${117}`);
+  knex.raw("ALTER SEQUENCE municipio_id_seq RESTART WITH 117");
 }

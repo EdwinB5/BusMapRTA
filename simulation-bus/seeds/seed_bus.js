@@ -40,7 +40,7 @@ export async function seed(knex) {
         distancia_teorica: 0,
       },
     ]);
-
+    await knex('municipio').where('id', bus.id_municipio).update({ capacidad_actual: 1 });
     ids_buses.push({
       id_bus: id_bus,
       fk_ruta: bus.fk_ruta,
@@ -48,10 +48,10 @@ export async function seed(knex) {
     });
     id_bus++;
   }
+  
 
   console.log("Buses insertados", (id_bus - 1));
 
   writeFileJSON(ids_buses, "./src/data/entity_ids/ids_buses.json");
-  
-  knex.raw(`ALTER SEQUENCE bus_id_seq RESTART WITH ${21}`);
+  knex.raw("ALTER SEQUENCE bus_id_seq RESTART WITH 22");
 }

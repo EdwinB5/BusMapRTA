@@ -47,7 +47,7 @@ export class Simulation extends IPusblisher {
     Model.knex(this.db);
     //Load remote config simulation
     await this.setConfigSimulation();
-    console.log("Configuracion REMOTA de simulacion cargada");
+    console.log('Configuracion REMOTA de simulacion cargada');
     console.log(this.config_simulation);
   }
 
@@ -83,8 +83,6 @@ export class Simulation extends IPusblisher {
     //Aumentar tiempo de la simulacion
     let actual_time = this.config_simulation.tiempo;
     this.before_time = new Date(actual_time);
-    console.log("Tiempo simulación: "+ actual_time);
-
     let time_add = this.config_simulation.aumento_tiempo; //In seconds
     actual_time.setSeconds(actual_time.getSeconds() + time_add); //Change time
     this.after_time = new Date(actual_time);
@@ -93,6 +91,7 @@ export class Simulation extends IPusblisher {
       tiempo: actual_time.toISOString(),
     });
 
+    console.log("Tiempo simulación: "+ actual_time);
     console.log("Siguiente: " + state);
   }
 

@@ -16,6 +16,10 @@ export default class MunicipioBus extends Model {
     return MunicipioBus.query().insert({ id_municipio: id_municipio, id_bus: id_bus }).returning(['id_municipio', 'id_bus']);
   }
 
+  static getMunicipioBusByBusId(id_bus) {
+    return MunicipioBus.query().where('id_bus', id_bus);
+  }
+
   static get jsonSchema() {
     return {
       type: 'object',
@@ -23,8 +27,8 @@ export default class MunicipioBus extends Model {
 
       properties: {
         id_municipio: { type: 'integer' },
-        id_bus: { type: 'integer' }
-      }
+        id_bus: { type: 'integer' },
+      },
     };
   }
 
@@ -35,17 +39,17 @@ export default class MunicipioBus extends Model {
         modelClass: Municipio,
         join: {
           from: 'municipio_bus.id_municipio',
-          to: 'municipio.id'
-        }
+          to: 'municipio.id',
+        },
       },
       bus: {
         relation: Model.BelongsToOneRelation,
         modelClass: Bus,
         join: {
           from: 'municipio_bus.id_bus',
-          to: 'bus.id'
-        }
-      }
+          to: 'bus.id',
+        },
+      },
     };
   }
 }

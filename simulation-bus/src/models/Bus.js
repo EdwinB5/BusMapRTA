@@ -22,7 +22,7 @@ export default class Bus extends Model {
   }
 
   static getBuses(select_fields = ["*"]) {
-    return this.query().select(select_fields).whereNot("estado", STATES_BUS.NOT_AVAILABLE);
+    return this.query().select(select_fields).whereNot("estado", STATES_BUS.AVAILABLE);
   }
 
   static get jsonSchema() {
@@ -42,14 +42,14 @@ export default class Bus extends Model {
         localizacion: { type: "object" },
         estado: { type: "string", maxLength: 25 },
         fecha_salida: { type: "string", format: "date-time" },
-        fecha_entrada: { type: "string", format: "date-time" },
-        fecha_disponible: { type: "string", format: "date-time" },
+        fecha_entrada: { type: "string", format: "date-time", nullable: true },
+        fecha_disponible: { type: "string", format: "date-time", nullable: true },
         cupos_maximos: { type: "integer" },
         cupos_actuales: { type: "integer" },
         velocidad_promedio: { type: "integer" },
         distancia_actual: { type: "number" },
         tiempo_viaje: { type: "number" },
-        fk_ruta: { type: "integer" },
+        fk_ruta: { type: "integer", nullable: true },
         indice_ruta: { type: "integer" },
         distancia_teorica: { type: "number" },
       },

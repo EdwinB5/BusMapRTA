@@ -34,5 +34,5 @@ export async function seed(knex) {
     console.log("Rutas insertadas", rutas.length);
 
     writeFileJSON(ids_rutas, "./src/data/entity_ids/ids_rutas.json");
-    knex.raw(`ALTER SEQUENCE ruta_id_seq RESTART WITH ${420}`);
+    knex.raw("ALTER SEQUENCE ruta_id_seq RESTART WITH 421");
 }

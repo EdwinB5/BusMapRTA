@@ -59,3 +59,8 @@ export function getDistance(speed, time) {
 export function MtoKm(distance) {
   return distance / 1000;
 }
+
+export function KmToM(distance) {
+  return distance * 1000;
+
+}

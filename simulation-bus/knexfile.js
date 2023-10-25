@@ -17,7 +17,11 @@ const knexConfig = {
     },
     seeds: {
       directory: './seeds'
-    }
+    },
+    pool: {
+      min: 0,   // Número mínimo de conexiones en el pool
+      max: 100,  // Número máximo de conexiones en el pool
+    },
   },
 
   staging: {
@@ -29,8 +33,8 @@ const knexConfig = {
       password: process.env.BM_PASSWORD,
     },
     pool: {
-      min: 2,
-      max: 10,
+      min: 0,
+      max: 100,
     },
     migrations: {
       tableName: "knex_migrations",
@@ -50,8 +54,8 @@ const knexConfig = {
       password: process.env.BM_PASSWORD,
     },
     pool: {
-      min: 2,
-      max: 10,
+      min: 0,
+      max: 100,
     },
     migrations: {
       tableName: "knex_migrations",
