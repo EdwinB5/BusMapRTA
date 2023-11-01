@@ -1,6 +1,7 @@
 import { Model } from "objection";
 import Bus from "./Bus.js";
 
+import { Simulation } from "../controller/Simulation.js";
 
 export const MODE = {
     "DECREMENT": "decrement",
@@ -22,14 +23,14 @@ export default class Municipio extends Model {
     return this.query().findById(municipio_id).patch(object)
   }
   
-  static updateCapacities(mode=MODE.DECREMENT, id_municipio, column="capacidad_actual", value=1) 
+  static updateCapacities(mode, id_municipio, column, value=1) 
   {
     if (mode == MODE.DECREMENT) {
-      console.log("Decrementado");
+      console.log(`Decrementado => Municipio: ${id_municipio} #request ${Simulation.getSimulationsRequest()} => ${column} | -${value}`);
       return this.query().findById(id_municipio).decrement(column, value);
     } else
     {
-      console.log("Incrementado");
+      console.log(`Incrementando => Municipio: ${id_municipio} #request ${Simulation.getSimulationsRequest()} => ${column} | +${value}`);
       return this.query().findById(id_municipio).increment(column, value);
     }
   }

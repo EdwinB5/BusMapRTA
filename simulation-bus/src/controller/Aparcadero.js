@@ -47,58 +47,47 @@ export class Aparcadero extends ISuscriber {
    * @param {*} data with format {time_before: Date(),time_after: Date()}
    */
   async update(data) {
-    //Implement
-    console.log('Update >>>>>>>>>>>> Aparcadero: ', data);
-    const trx = await Model.startTransaction();
     this.data = data;
-    try {
-      await this.processChange();
-      await trx.commit();
-    } catch (error) {
-      await trx.rollback();
-      console.log(error);
-    }
+    await this.processChange();
   }
 
   async processChange() {
     let buses = await Bus.getBuses();
+    console.log(`Buses: ${buses.length}`);
 
     for (let i = 0; i < buses.length; i++) {
-      const trx_bus = await Model.startTransaction();
       const bus = buses[i];
+      console.log(`Bus id ${bus.id} | Estado: ${bus.estado}`);
 
-      try {
-        switch (bus.estado) {
-          case STATES_BUS.PARKED:
-            await this.managePARKED(bus);
-            break;
-          case STATES_BUS.MOVING:
-            await this.manageMOVING(bus);
-            break;
-          case STATES_BUS.AVAILABLE:
-            this.manageAVAILABLE(bus);
-            break;
-          case STATES_BUS.NOT_AVAILABLE:
-            await this.manageNOT_AVAILABLE(bus);
-            break;
-        }
-        await trx_bus.commit();
-      } catch (error) {
-        await trx_bus.rollback();
-        console.log(error);
+      switch (bus.estado) {
+        case STATES_BUS.PARKED:
+          await this.managePARKED(bus);
+          break;
+        case STATES_BUS.MOVING:
+          await this.manageMOVING(bus);
+          break;
+        case STATES_BUS.AVAILABLE:
+          this.manageAVAILABLE(bus);
+          break;
+        case STATES_BUS.NOT_AVAILABLE:
+          await this.manageNOT_AVAILABLE(bus);
+          break;
       }
     }
     await this.db.destroy();
+    //process.exit(0);
   }
 
   async managePARKED(bus) {
-    //console.log("bus: ", bus.id, bus.estado);
     if (this.data.after_time >= bus.fecha_salida) {
       let delta_time = toSeconds(getDeltaTime(bus.fecha_salida, this.data.after_time));
+
       let distancia_recorrida = getDistance(KMHtoMS(bus.velocidad_promedio), delta_time);
+
       let distancia_actual = MtoKm(distancia_recorrida);
 
       let ruta_bus = await Ruta.getRutaById(bus.fk_ruta);
+
       let ruta_trazada = HexFromGeometry(ruta_bus.ruta_trazada).coordinates;
 
       let estado_bus = STATES_BUS.MOVING;
@@ -106,20 +95,11 @@ export class Aparcadero extends ISuscriber {
       await Bus.updateBus(bus.id, { estado: estado_bus, distancia_actual: distancia_actual });
 
       //CAPACIDADES MUNICIPIO
-      const trx_tempo = await Model.startTransaction();
-      try {
-        await Municipio.updateCapacities(MODE.DECREMENT, ruta_bus.municipio_origen, 'capacidad_actual', 1);
-        trx_tempo.commit();
-      } catch (error) {
-        trx_tempo.rollback();
-      }
 
+      await Municipio.updateCapacities(MODE.DECREMENT, ruta_bus.municipio_origen, 'capacidad_actual', 1);
       await MunicipioBus.deleteMunicipioBus(ruta_bus.municipio_origen, bus.id);
 
-      //console.log(`distancia_actual ${KmToM(distancia_actual)} | Total: ${ruta_bus.distancia_total} | Distancia teorica ${bus.distancia_teorica}`);
-
       if (this.llegoDestino(KmToM(distancia_actual), ruta_bus.distancia_total) && estado_bus == STATES_BUS.MOVING) {
-        console.log(`Llego a destino ${bus.id}`);
         this.establecerAparcadero(bus, distancia_actual, ruta_bus, ruta_trazada);
       } else {
         this.calculoMovimiento(bus, ruta_bus, KmToM(distancia_actual), ruta_trazada);
@@ -186,8 +166,6 @@ export class Aparcadero extends ISuscriber {
     let distancias = ruta_bus.distancias;
     let suma_distancia_t = bus.distancia_teorica;
 
-    //onsole.log(`Bus id ${bus.id} | Ruta: ${distancias.length}`);
-
     for (let i = bus.indice_ruta; i < distancias.length; i++) {
       const distancia_i = distancias[i];
       suma_distancia_t += distancia_i;
@@ -202,7 +180,6 @@ export class Aparcadero extends ISuscriber {
         await Bus.updateBus(bus.id, { localizacion: { type: 'Point', coordinates: loc }, indice_ruta: indice_ruta, distancia_teorica: suma_distancia_t });
         break;
       } else if (this.distanciaPuntoExacto(suma_distancia_t, distancia_actual)) {
-        //console.log('Punto exacto');
         let indice_ruta = i + 1;
         let nuevo_localizacion = ruta_trazada[indice_ruta];
         let loc = [nuevo_localizacion[1], nuevo_localizacion[0]];
@@ -223,6 +200,7 @@ export class Aparcadero extends ISuscriber {
   async establecerAparcadero(bus, distancia_actual, ruta_bus, ruta_trazada) {
     //Establecimiento del origen cuando llega al fin
     let nuevo_localizacion = ruta_trazada[ruta_trazada.length - 1]; //Ultimo punto de la ruta
+
     let loc = [nuevo_localizacion[1], nuevo_localizacion[0]];
     //CAMBIAR RELACION DE BUS CON SU NUEVO ORIGEN POR MEDIO DEL DESTINO
     // AQUI =>
@@ -240,20 +218,14 @@ export class Aparcadero extends ISuscriber {
     let tiempo_viaje = delta_nw + bus.tiempo_viaje;
 
     await Bus.updateBus(bus.id, { localizacion: { type: 'Point', coordinates: loc }, fecha_entrada: fecha_entrada.toISOString(), indice_ruta: 0, distancia_actual: 0, distancia_teorica: 0, tiempo_viaje: tiempo_viaje });
-    console.log(`Bus id ${bus.id} Nuevo origen!`);
-
-    let relaciones = await MunicipioBus.getMunicipioBusByBusId(bus.id).length;
-    console.log('##################################################################Relaciones: ', relaciones);
-    if (relaciones == undefined || relaciones == 0) {
-      await MunicipioBus.insertMunicipioBus(id_municipio_origen, bus.id); //Actualizar en BD
-    }
+    await MunicipioBus.insertMunicipioBus(id_municipio_origen, bus.id); //Actualizar en BD
 
     //SE VERIFICA SI EL TIEMPO DE VIAJE ES MAYOR AL MAXIMO DE VIAJE
     if (tiempo_viaje > Simulation.maximo_viaje) {
       let estado = STATES_BUS.NOT_AVAILABLE;
 
-      let fecha_disponible = new Date(bus.fecha_entrada);
-      fecha_disponible.setHours(fecha_disponible.getHours() + bus.tiempo_viaje);
+      let fecha_disponible = new Date(fecha_entrada);
+      fecha_disponible.setHours(fecha_disponible.getHours() + tiempo_viaje);
 
       await Bus.updateBus(bus.id, { estado: estado, fecha_disponible: fecha_disponible.toISOString(), tiempo_viaje: 0 });
 

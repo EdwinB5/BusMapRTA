@@ -24,7 +24,7 @@ export const STATES_SIMULATION = {
 export class Simulation extends IPusblisher {
 
   static maximo_viaje = 0;
-
+  static simulations_request = 0;
   constructor(time_pause, id_config_simulation) {
     super();
     
@@ -68,13 +68,18 @@ export class Simulation extends IPusblisher {
         this.config_simulation.estado === STATES_SIMULATION.RUNNING ||
         this.config_simulation.estado === STATES_SIMULATION.INIT
       ) {
-        await this.increaseTime();
-        Simulation.setMaximoViaje(this.config_simulation.maximo_viaje);
-        this.notify();
-        this.notifyChanges();
-        await this.waitTime();
-        await this.setConfigSimulation();
-        console.log("Simulando...");
+        let status_ic = await this.increaseTime();
+        if (status_ic == 1) {
+          Simulation.setMaximoViaje(this.config_simulation.maximo_viaje);
+
+          let change_make = await this.notify();
+          if (change_make) {
+            this.notifyChanges();
+            await this.waitTime();
+            await this.setConfigSimulation();
+            console.log(`Simulando... ${Simulation.getSimulationsRequest()}`);
+          }
+        }        
       }
     }
   }
@@ -90,9 +95,7 @@ export class Simulation extends IPusblisher {
     let state = await Simulacion.query().findById(1).patch({
       tiempo: actual_time.toISOString(),
     });
-
-    console.log("Tiempo simulación: "+ actual_time);
-    console.log("Siguiente: " + state);
+    return state;
   }
 
   static setMaximoViaje(maximo_viaje) {
@@ -101,6 +104,13 @@ export class Simulation extends IPusblisher {
 
   static getMaximoViaje() {
     return Simulacion.maximo_viaje;
+  }
+
+  static getSimulationsRequest() {
+    return Simulation.simulations_request;
+  }
+  static setSimulationsRequest(nw_value) {
+    Simulation.simulations_request = nw_value;
   }
 
   /**
@@ -120,7 +130,7 @@ export class Simulation extends IPusblisher {
       this.config_simulation.aumento_real /
       this.config_simulation.multiplicador;
     await sleep(toMS(frucuency_seconds));
-    console.log(`Tiempo simulado: ${frucuency_seconds} segundo`);
+    //console.log(`Tiempo simulado: ${frucuency_seconds} segundo`);
     //Change state simulation
   }
 
@@ -135,7 +145,7 @@ export class Simulation extends IPusblisher {
    * @returns 
    */
   checkStatusSimulation(status_remote) {
-    console.log("Estado simulación: ", status_remote)
+    //console.log("Estado simulación: ", status_remote)
     let status_simulation_valid = false;
     for (const key in STATES_SIMULATION) {
       const status =  STATES_SIMULATION[key];
@@ -163,10 +173,14 @@ export class Simulation extends IPusblisher {
   /**
    * Using pattern observer, notify to all suscribers entity changes
    */
-  notify() {
+  async notify() {
     let data = { before_time: this.before_time, after_time: this.after_time };
-    this.suscribers.forEach( async (suscriber) => {
+    for (let i = 0; i < this.suscribers.length; i++) {
+      const suscriber = this.suscribers[i];
+      console.log(`Notificando a suscriptor, it: ${Simulation.getSimulationsRequest()}`);
       await suscriber.update(data);
-    });
+    }
+    Simulation.setSimulationsRequest(Simulation.getSimulationsRequest() + 1);
+    return true;
   }
 }

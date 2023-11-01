@@ -70,7 +70,7 @@ export async function seed(knex) {
       id: 1,
       multiplicador: 1,
       maximo_viaje: 8,
-      aumento_tiempo: 1,
+      aumento_tiempo: 60,
       aumento_real: 1,
       tiempo: "0001-01-01 00:00:00",
       estado: "iniciado",
